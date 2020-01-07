@@ -17,7 +17,7 @@ cd ..
 pip install -r requirement.txt
 ```
 ### 加载预训练模型
-在自己的数据集上开始训练自己的模型时，需要加载res101预训练模型，[下载链接](https://www.dropbox.com/s/ut45d7pfv6po4rx/faster_rcnn_1_5_1999.pth?dl=0)
+在自己的数据集上开始训练自己的模型时，需要加载res101预训练模型，[下载链接](https://www.dropbox.com/s/rr0pkuzinjeurwx/resnet101_caffe.pth?dl=0)
 
 将下载好的文件放在data/pretrained_model文件夹下
 
