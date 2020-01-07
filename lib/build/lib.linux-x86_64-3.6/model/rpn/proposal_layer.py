@@ -19,6 +19,7 @@ from .generate_anchors import generate_anchors
 from .bbox_transform import bbox_transform_inv, clip_boxes, clip_boxes_batch
 # from model.nms.nms_wrapper import nms
 from model.roi_layers import nms
+from model.nms.softnms_cpu_torch import softnms_cpu_torch
 import pdb
 
 DEBUG = False
@@ -144,13 +145,17 @@ class _ProposalLayer(nn.Module):
             # 6. apply nms (e.g. threshold = 0.7)
             # 7. take after_nms_topN (e.g. 300)
             # 8. return the top proposals (-> RoIs top)
-            keep_idx_i = nms(proposals_single, scores_single.squeeze(1), nms_thresh)
-            keep_idx_i = keep_idx_i.long().view(-1)
-
+            # keep_idx_i = nms(proposals_single, scores_single.squeeze(1), nms_thresh)
+            # keep_idx_i = keep_idx_i.long().view(-1)
+            det = torch.cat((proposals_single,scores_single),1)
+            keep_det = softnms_cpu_torch(det)
             if post_nms_topN > 0:
-                keep_idx_i = keep_idx_i[:post_nms_topN]
-            proposals_single = proposals_single[keep_idx_i, :]
-            scores_single = scores_single[keep_idx_i, :]
+                # keep_idx_i = keep_idx_i[:post_nms_topN]
+                keep_det = keep_det[:post_nms_topN]
+            # proposals_single = proposals_single[keep_idx_i, :]
+            proposals_single = keep_det[:,:-1]
+            # scores_single = scores_single[keep_idx_i, :]
+            scores_single = keep_det[:,-1]
 
             # padding 0 at the end.
             num_proposal = proposals_single.size(0)

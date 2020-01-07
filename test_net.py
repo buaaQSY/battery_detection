@@ -33,70 +33,79 @@ from model.rpn.bbox_transform import bbox_transform_inv
 from model.utils.net_utils import save_net, load_net, vis_detections
 from model.faster_rcnn.vgg16 import vgg16
 from model.faster_rcnn.resnet import resnet
+from model.nms.softnms_cpu_torch import softnms_cpu_torch
 
-try:
+# try:
+#     xrange          # Python 2
+# except NameError:
+#     xrange = range  # Python 3
+
+
+# def parse_args():
+#   """
+#   Parse input arguments
+#   """
+#   parser = argparse.ArgumentParser(description='Train a Fast R-CNN network')
+#   parser.add_argument('--dataset', dest='dataset',
+#                       help='training dataset',
+#                       default='pascal_voc', type=str)
+#   parser.add_argument('--cfg', dest='cfg_file',
+#                       help='optional config file',
+#                       default='cfgs/vgg16.yml', type=str)
+#   parser.add_argument('--net', dest='net',
+#                       help='vgg16, res50, res101, res152',
+#                       default='res101', type=str)
+#   parser.add_argument('--set', dest='set_cfgs',
+#                       help='set config keys', default=None,
+#                       nargs=argparse.REMAINDER)
+#   parser.add_argument('--load_dir', dest='load_dir',
+#                       help='directory to load models', default="models",
+#                       type=str)
+#   parser.add_argument('--cuda', dest='cuda',
+#                       help='whether use CUDA',
+#                       action='store_false')
+#   # parser.add_argument('--ls', dest='large_scale',
+#   #                     help='whether use large imag scale',
+#   #                     action='store_true')
+#   # parser.add_argument('--mGPUs', dest='mGPUs',
+#   #                     help='whether use multiple GPUs',
+#   #                     action='store_true')
+#   # parser.add_argument('--cag', dest='class_agnostic',
+#   #                     help='whether perform class_agnostic bbox regression',
+#   #                     action='store_true')
+#   parser.add_argument('--parallel_type', dest='parallel_type',
+#                       help='which part of model to parallel, 0: all, 1: model before roi pooling',
+#                       default=0, type=int)
+#   parser.add_argument('--checksession', dest='checksession',
+#                       help='checksession to load model',
+#                       default=1, type=int)
+#   parser.add_argument('--checkepoch', dest='checkepoch',
+#                       help='checkepoch to load network',
+#                       default=5, type=int)
+#   parser.add_argument('--checkpoint', dest='checkpoint',
+#                       help='checkpoint to load network',
+#                       default=1999, type=int)
+#   # parser.add_argument('--vis', dest='vis',
+#   #                     help='visualization mode',
+#   #                     action='store_true')
+#   args = parser.parse_args()
+#   return args
+
+# lr = cfg.TRAIN.LEARNING_RATE
+# momentum = cfg.TRAIN.MOMENTUM
+# weight_decay = cfg.TRAIN.WEIGHT_DECAY
+
+# if __name__ == '__main__':
+def run(args):
+  lr = cfg.TRAIN.LEARNING_RATE
+  momentum = cfg.TRAIN.MOMENTUM
+  weight_decay = cfg.TRAIN.WEIGHT_DECAY
+  try:
     xrange          # Python 2
-except NameError:
+  except NameError:
     xrange = range  # Python 3
 
-
-def parse_args():
-  """
-  Parse input arguments
-  """
-  parser = argparse.ArgumentParser(description='Train a Fast R-CNN network')
-  parser.add_argument('--dataset', dest='dataset',
-                      help='training dataset',
-                      default='pascal_voc', type=str)
-  parser.add_argument('--cfg', dest='cfg_file',
-                      help='optional config file',
-                      default='cfgs/vgg16.yml', type=str)
-  parser.add_argument('--net', dest='net',
-                      help='vgg16, res50, res101, res152',
-                      default='res101', type=str)
-  parser.add_argument('--set', dest='set_cfgs',
-                      help='set config keys', default=None,
-                      nargs=argparse.REMAINDER)
-  parser.add_argument('--load_dir', dest='load_dir',
-                      help='directory to load models', default="models",
-                      type=str)
-  parser.add_argument('--cuda', dest='cuda',
-                      help='whether use CUDA',
-                      action='store_true')
-  parser.add_argument('--ls', dest='large_scale',
-                      help='whether use large imag scale',
-                      action='store_true')
-  parser.add_argument('--mGPUs', dest='mGPUs',
-                      help='whether use multiple GPUs',
-                      action='store_true')
-  parser.add_argument('--cag', dest='class_agnostic',
-                      help='whether perform class_agnostic bbox regression',
-                      action='store_true')
-  parser.add_argument('--parallel_type', dest='parallel_type',
-                      help='which part of model to parallel, 0: all, 1: model before roi pooling',
-                      default=0, type=int)
-  parser.add_argument('--checksession', dest='checksession',
-                      help='checksession to load model',
-                      default=1, type=int)
-  parser.add_argument('--checkepoch', dest='checkepoch',
-                      help='checkepoch to load network',
-                      default=1, type=int)
-  parser.add_argument('--checkpoint', dest='checkpoint',
-                      help='checkpoint to load network',
-                      default=10021, type=int)
-  parser.add_argument('--vis', dest='vis',
-                      help='visualization mode',
-                      action='store_true')
-  args = parser.parse_args()
-  return args
-
-lr = cfg.TRAIN.LEARNING_RATE
-momentum = cfg.TRAIN.MOMENTUM
-weight_decay = cfg.TRAIN.WEIGHT_DECAY
-
-if __name__ == '__main__':
-
-  args = parse_args()
+  #args = parse_args()
 
   print('Called with args:')
   print(args)
@@ -210,7 +219,7 @@ if __name__ == '__main__':
   num_images = len(imdb.image_index)
   all_boxes = [[[] for _ in xrange(num_images)]
                for _ in xrange(imdb.num_classes)]
-
+  #pdb.set_trace()
   output_dir = get_output_dir(imdb, save_name)
   dataset = roibatchLoader(roidb, ratio_list, ratio_index, 1, \
                         imdb.num_classes, training=False, normalize = False)
@@ -286,9 +295,14 @@ if __name__ == '__main__':
             
             cls_dets = torch.cat((cls_boxes, cls_scores.unsqueeze(1)), 1)
             # cls_dets = torch.cat((cls_boxes, cls_scores), 1)
-            cls_dets = cls_dets[order]
-            keep = nms(cls_boxes[order, :], cls_scores[order], cfg.TEST.NMS)
-            cls_dets = cls_dets[keep.view(-1).long()]
+            # cls_dets = cls_dets[order]
+            # keep = nms(cls_boxes[order, :], cls_scores[order], cfg.TEST.NMS)
+            # cls_dets = cls_dets[keep.view(-1).long()]
+            cls_dets = cls_dets[order] 
+            # keep = nms(cls_boxes[order, :], cls_scores[order], cfg.TEST.NMS) 
+            keep = softnms_cpu_torch(cls_dets) 
+            # cls_dets = cls_dets[keep.view(-1).long()] 
+            cls_dets = keep
             if vis:
               im2show = vis_detections(im2show, imdb.classes[j], cls_dets.cpu().numpy(), 0.3)
             all_boxes[j][i] = cls_dets.cpu().numpy()
