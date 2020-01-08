@@ -237,6 +237,18 @@ def test():
     process_annatation(img_path,anno_path)
     run(args)
 
+def get_output():
+    origin_dir = os.getcwd() + '/data/VOCdevkit2007/results/VOC2007/Main' 
+    output_dir = os.path.abspath(os.path.join(os.getcwd(), "..")) + '/predicted_file'
+    file_list = os.listdir(origin_dir)
+
+    for fi in file_list:
+        if os.path.exists(output_dir):
+            shutil.copy(os.path.join(origin_dir,fi),output_dir)
+        else:
+            os.makedirs(output_dir)
+            shutil.copy(os.path.join(origin_dir,fi),output_dir)
+
 if __name__ == "__main__":
     # if len(sys.argv) != 4:
     #     print("需要指定第三个参数测试集txt文件(core_coreless_test.txt)")
@@ -246,4 +258,6 @@ if __name__ == "__main__":
     # anno_path = sys.argv[2]
     # test_file = sys.argv[3]
     test()
+    print("Writting predicted file")
+    get_output()
 

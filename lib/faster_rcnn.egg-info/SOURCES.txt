@@ -1,10 +1,10 @@
 setup.py
-/home/woaibritneyspears/faster-rcnn.pytorch3/lib/model/csrc/vision.cpp
-/home/woaibritneyspears/faster-rcnn.pytorch3/lib/model/csrc/cpu/ROIAlign_cpu.cpp
-/home/woaibritneyspears/faster-rcnn.pytorch3/lib/model/csrc/cpu/nms_cpu.cpp
-/home/woaibritneyspears/faster-rcnn.pytorch3/lib/model/csrc/cuda/ROIAlign_cuda.cu
-/home/woaibritneyspears/faster-rcnn.pytorch3/lib/model/csrc/cuda/ROIPool_cuda.cu
-/home/woaibritneyspears/faster-rcnn.pytorch3/lib/model/csrc/cuda/nms.cu
+/home/woaibritneyspears/faster-rcnn.pytorch4/lib/model/csrc/vision.cpp
+/home/woaibritneyspears/faster-rcnn.pytorch4/lib/model/csrc/cpu/ROIAlign_cpu.cpp
+/home/woaibritneyspears/faster-rcnn.pytorch4/lib/model/csrc/cpu/nms_cpu.cpp
+/home/woaibritneyspears/faster-rcnn.pytorch4/lib/model/csrc/cuda/ROIAlign_cuda.cu
+/home/woaibritneyspears/faster-rcnn.pytorch4/lib/model/csrc/cuda/ROIPool_cuda.cu
+/home/woaibritneyspears/faster-rcnn.pytorch4/lib/model/csrc/cuda/nms.cu
 datasets/__init__.py
 datasets/coco.py
 datasets/ds_utils.py
